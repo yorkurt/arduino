@@ -1,0 +1,7 @@
+<launch>
+  <group name="base_station">
+    <include file="$(find joysticks)/launch/joylaunch.launch" />
+    <include file="$(find nmea_tcp_driver)/launch/gps.launch" />
+    https://github.com/ros-perception/image_pipeline.git
+  </group>
+</launch>

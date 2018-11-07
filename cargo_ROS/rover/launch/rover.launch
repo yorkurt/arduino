@@ -1,0 +1,5 @@
+<launch>
+   
+    <include file="$(find rosduino)/launch/arduino_nodes.launch" />
+    
+</launch> 
