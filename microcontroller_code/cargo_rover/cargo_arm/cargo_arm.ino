@@ -3,7 +3,7 @@
 #include <std_msgs/Byte.h>
 //#include <std_msgs/Empty.h>
 #include <std_msgs/Bool.h>
-#include <joysticks/drive.h>
+#include <joysticks/arm.h>
 #include <AltSoftSerial.h>
 #include <AltSSPololuQik.h>
 
@@ -15,7 +15,7 @@ bool timeout = false;
 int rSpd;
 int lSpd;
 
-PololuQik2s12v10 drv(resetPin);
+PololuQik2s12v10 arm(resetPin);
 
 //Create a ROS node-handler to handle ROS stuff
 ros::NodeHandle  nh;
@@ -31,9 +31,9 @@ void setTimeOut(const std_msgs::Bool &timeout_data) {
   timeout = timeout_data.data;
 }
 
-void spinWheel(const joysticks::drive &drive) {
-  drv.setM0Speed(drive.right);
-  drv.setM1Speed(drive.left);
+void moveJoint(const joysticks::arm &arm_data) {
+  arm.setM0Speed(arm_data.joint1 / 2);
+  arm.setM1Speed(arm_data.joint2 / 2);
 }
 //
 //void getErrorMsg(const std_msgs::Empty &e_msg) {
@@ -44,7 +44,7 @@ void spinWheel(const joysticks::drive &drive) {
 
 //Setup subscribers
 
-ros::Subscriber<joysticks::drive> sub_drive("drive", &spinWheel);
+ros::Subscriber<joysticks::arm> sub_arm("arm", &moveJoint);
 //ros::Subscriber<std_msgs::Empty> sub_error("getError", &getErrorMsg);
 ros::Subscriber<std_msgs::Bool> sub_timeout("timeout", &setTimeOut);
 
@@ -53,12 +53,12 @@ void setup()
 {
   //Initiate the node & subscribers
   nh.initNode();
-  nh.subscribe(sub_drive);
+  nh.subscribe(sub_arm);
   //  nh.subscribe(sub_error);
   nh.subscribe(sub_timeout);
   //nh.advertise(error);
   //Initialize serial comms with the driver
-  drv.init();
+  arm.init();
   delay(10);
 
 }
@@ -70,8 +70,8 @@ void loop()
   if (!timeout) {
     nh.spinOnce();
   } else {
-    drv.setM0Speed(0);
-    drv.setM1Speed(0);
+    arm.setM0Speed(0);
+    arm.setM1Speed(0);
     delay(1000);
     resetFunc();
   }
