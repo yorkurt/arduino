@@ -18,42 +18,24 @@ PololuQik2s12v10 arm(resetPin);
 //Create a ROS node-handler to handle ROS stuff
 ros::NodeHandle  nh;
 
-
-std_msgs::Float32 chatter_msg;
-ros::Publisher chatter("chatter", &chatter_msg);
-
-std_msgs::Float32 base_msg;
-ros::Publisher base("base_hdg", &base_msg);
-
-std_msgs::Float32 rover_msg;
-ros::Publisher rover("rover_hdg", &rover_msg);
-
 void moveJoint(const std_msgs::Float32 &a) {
   float rover_hdg = a.data;
-  rover_msg.data = rover_hdg;
-  rover.publish(&rover_msg);
-  base_msg.data = base_hdg;
-  base.publish(&base_msg);
 
   float diff = getDifference(rover_hdg, base_hdg);
 
   if (diff > 0) {
-    chatter_msg.data = 1;
     while (abs(base_hdg - rover_hdg) > ERR) {
       arm.setM0Speed(SPEED); // clockwise
     }
     arm.setM0Speed(0);
   } else if (diff < 0) {
-    chatter_msg.data = -1;
     while (abs(base_hdg - rover_hdg) > ERR) {
       arm.setM0Speed(-SPEED); // counter-clockwise
     }
     arm.setM0Speed(0);
   } else {
-    chatter_msg.data = -10;
     arm.setM0Speed(0);
   }
-  //arm.setM0Speed(SPEED);
 }
 
 void getAntennaHeading(const std_msgs::Float32 &i) {
@@ -72,9 +54,6 @@ void setup()
   nh.initNode();
   nh.subscribe(sub_rover_hdg);
   nh.subscribe(sub_base_hdg);
-  nh.advertise(chatter);
-  nh.advertise(rover);
-  nh.advertise(base);
   //Initialize serial comms with the driver
   arm.init();
   delay(10);
@@ -86,7 +65,6 @@ void setup()
 void loop()
 {
   nh.spinOnce();
-  chatter.publish(&chatter_msg);
 }
 
 float getDifference(float a1, float a2) {
