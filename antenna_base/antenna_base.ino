@@ -10,42 +10,41 @@
 
 const byte resetPin = 4;
 float base_hdg = 0.0;
+float rover_hdg = 0.0;
 const byte SPEED = 60;
-const float ERR = 0.5;
+const float ERR = 1.5; // error tolerance
 
 PololuQik2s12v10 arm(resetPin);
 
 //Create a ROS node-handler to handle ROS stuff
 ros::NodeHandle  nh;
 
-void moveJoint(const std_msgs::Float32 &a) {
-  float rover_hdg = a.data;
+void getRoverHeading(const std_msgs::Float32 &a) {
+  rover_hdg = a.data;
+  moveJoint();
+}
 
+void getAntennaHeading(const std_msgs::Float32 &i) {
+  base_hdg = i.data;
+  moveJoint();
+}
+
+void moveJoint() {
   float diff = getDifference(rover_hdg, base_hdg);
 
-  if (diff > 0) {
-    while (abs(base_hdg - rover_hdg) > ERR) {
-      arm.setM0Speed(SPEED); // clockwise
-    }
-    arm.setM0Speed(0);
-  } else if (diff < 0) {
-    while (abs(base_hdg - rover_hdg) > ERR) {
-      arm.setM0Speed(-SPEED); // counter-clockwise
-    }
-    arm.setM0Speed(0);
+  if (diff > ERR) {
+    arm.setM0Speed(SPEED); // clockwise (?)
+  } else if (diff < -ERR) {
+    arm.setM0Speed(-SPEED); // counter-clockwise (?)
   } else {
     arm.setM0Speed(0);
   }
 }
 
-void getAntennaHeading(const std_msgs::Float32 &i) {
-  base_hdg = i.data;
-}
-
 //Setup subscribers
 
-ros::Subscriber<std_msgs::Float32> sub_rover_hdg("base_bearing", &moveJoint);
-ros::Subscriber<std_msgs::Float32> sub_base_hdg("IMU_rover", &getAntennaHeading);
+ros::Subscriber<std_msgs::Float32> sub_rover_hdg("base_bearing", &getRoverHeading);
+ros::Subscriber<std_msgs::Float32> sub_base_hdg("IMU_base", &getAntennaHeading);
 
 
 void setup()
