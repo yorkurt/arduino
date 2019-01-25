@@ -18,6 +18,9 @@ float distance3;
 // define period
 const long PERIOD = 100;
 
+// define speed of sound
+const float SPEED = 0.000343;
+
 //Create a ROS node-handler to handle ROS stuff
 ros::NodeHandle  nh;
 messages::ultrasonics msg;
@@ -50,7 +53,7 @@ void loop() {
   duration = pulseIn(echoPin1, HIGH);
   
   // Calculating the distance
-  distance1 = (float) duration * 0.034 / 2.0f;
+  distance1 = (float) duration * SPEED / 2.0f;
 
   // Clears the trigPin2
   digitalWrite(trigPin2, LOW);
@@ -65,7 +68,7 @@ void loop() {
   duration = pulseIn(echoPin2, HIGH);
   
   // Calculating the distance
-  distance2 = (float) duration * 0.034 / 2.0f;
+  distance2 = (float) duration * SPEED / 2.0f;
 
    // Clears the trigPin3
   digitalWrite(trigPin3, LOW);
@@ -80,7 +83,7 @@ void loop() {
   duration = pulseIn(echoPin3, HIGH);
   
   // Calculating the distance
-  distance3 = (float) duration * 0.034 / 2.0f;
+  distance3 = (float) duration * SPEED / 2.0f;
 
   
   // Publishes to ROS
